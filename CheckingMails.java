@@ -31,6 +31,20 @@ public class CheckingMails {
             // retrieve the messages from the folder in an array and print it
             Message[] messages = emailFolder.getMessages();
             System.out.println("messages.length ---- " + messages.length);
+
+            // print out all messages
+            for (int i = 0, n = messages.length; i < n; i++) {
+                Message message = messages[i];
+                System.out.println("-----------------------------------");
+                System.out.println("Email Number: " + (i + 1));
+                System.out.println("Subject: " + message.getSubject());
+                System.out.println("From: " + message.getFrom()[0]);
+                System.out.println("Text: " + message.getContent().toString());
+            }
+
+            // close the store and folder objects
+            emailFolder.close(false);
+            store.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -39,14 +53,18 @@ public class CheckingMails {
     public static void main(String[] args) {
 
         // read config file
+        FileInputStream stream = null;
         Properties prop = new Properties();
         String filename = ".config";
         try {
-            FileInputStream stream = new FileInputStream(filename);
+            stream = new FileInputStream(filename);
             prop.load(stream);
+            stream.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         String host = prop.getProperty("host");
         String mailStoreType = prop.getProperty("mailStoreType");
         String username = prop.getProperty("username");
