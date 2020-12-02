@@ -36,7 +36,7 @@ public class SendMail {
         String password = prop.getProperty("password");
 
         String to = JOptionPane.showInputDialog(null, "to:");
-        String from = "nkrumah@thescienceset.com";
+        String from = username;
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
