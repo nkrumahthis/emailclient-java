@@ -27,6 +27,14 @@ public class FetchingMails {
     private FetchingMails() {
     }
 
+    public static void main(String[] args) {
+        String host = "pop.gmail.com"; // change accordingly
+        String mailStoreType = "pop3";
+        String username = "nkrumah@thescienceset.com"; // change accordingly
+        String password = "Nkrumah@D3xt"; // change accordingly
+        fetch(host, mailStoreType, username, password);
+    }
+
     public static void fetch(String pop3Host, String storeType, String user, String password) {
         try {
             Properties properties = new Properties();
@@ -98,7 +106,7 @@ public class FetchingMails {
         else if (part.isMimeType("multipart/*")) {
             System.out.println("This is a Multipart");
             System.out.println("--------------------");
-            Multipart multipart = (Multipart) part.getcontent();
+            Multipart multipart = (Multipart) part.getContent();
             int count = multipart.getCount();
             for (int i = 0; i < count; i++) {
                 writePart(multipart.getBodyPart(i));
