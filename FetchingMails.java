@@ -16,6 +16,8 @@ import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import jdk.internal.util.xml.impl.Input;
+
 /**
  * FetchingMails
  */
@@ -109,6 +111,27 @@ public class FetchingMails {
             int bytesRead;
             while ((bytesRead = test.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
+            }
+        } else {
+            // TODO continue
+            Object object = part.getContent();
+            if (object instanceof String) {
+                System.out.println("This is a string");
+                System.out.println("-------------------------");
+                System.out.println((String) object);
+            } else if (object instanceof InputStream) {
+                System.out.println("This is just an input stream");
+                System.out.println("-------------------------------");
+                InputStream inputStream = (InputStream) object;
+                inputStream = (InputStream) object;
+                int c;
+                while ((c = inputStream.read()) != -1) {
+                    System.out.write(c);
+                }
+            } else {
+                System.out.println("This is an unknown type");
+                System.out.println("-----------------------");
+                System.out.println(object.toString());
             }
         }
     }
