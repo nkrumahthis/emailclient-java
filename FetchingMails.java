@@ -60,6 +60,11 @@ public class FetchingMails {
         }
     }
 
+    /*
+     * This method checks for content-type based on which, it processes and fetches
+     * the content of the messge
+     */
+
     public static void writePart(Part part) throws Exception {
         if (part instanceof Message) {
             writeEnvelope((Message) part);
@@ -96,7 +101,25 @@ public class FetchingMails {
         // check if the content is an inline image
         else if (part.isMimeType("image/jpeg")) {
             // image jpeg
+            System.out.println("-------------> image/jpeg");
+            Object object = part.getContent();
 
+            InputStream inputStream = (InputStream) object;
+            System.out.println("inputstream.length = " + inputStream.available());
+
+            // construct the required byte array
+
+            int i = 0;
+            byte[] byteArray = new byte[inputStream.available()];
+            while ((i = (int) ((InputStream) inputStream).available()) > 0) {
+                int result = (int) (((InputStream) inputStream).read(byteArray));
+                if (result == -1) {
+                    break;
+                }
+            }
+
+            FileOutputStream fileOutputStream = new FileOutputStream("/tmp/image.jpg");
+            fileOutputStream.write(byteArray);
         }
 
         else if (part.getContentType().contains("image/")) {
@@ -135,6 +158,8 @@ public class FetchingMails {
             }
         }
     }
+
+    // This method would print FROM, TO and SUBJECT of the message
 
     public static void writeEnvelope(Message message) throws Exception {
         System.out.println("This is the message envelope");
