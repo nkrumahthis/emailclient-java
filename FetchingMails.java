@@ -2,6 +2,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,16 +24,29 @@ import javax.mail.Store;
 /**
  * FetchingMails
  */
+
 public class FetchingMails {
 
     private FetchingMails() {
     }
 
-    public static void main(String[] args) {
-        String host = "pop.gmail.com"; // change accordingly
+    public static void main(String[] args) throws IOException {
+        Properties config = new Properties();
+        String filename = ".config";
+        FileInputStream stream = null;
+        try {
+            stream = new FileInputStream(filename);
+            config.load(stream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            stream.close();
+        }
+
+        String host = config.getProperty("host"); // change accordingly
         String mailStoreType = "pop3";
-        String username = "nkrumah@thescienceset.com"; // change accordingly
-        String password = "Nkrumah@D3xt"; // change accordingly
+        String username = config.getProperty("username"); // change accordingly
+        String password = config.getProperty("password"); // change accordingly
         fetch(host, mailStoreType, username, password);
     }
 
@@ -185,27 +199,40 @@ public class FetchingMails {
             }
         }
 
-        FileOutputStream fileOutputStream = new FileOutputStream("/tmp/image.jpg");
-        fileOutputStream.write(byteArray);
-        fileOutputStream.close();
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream("/tmp/image.jpg");
+            fileOutputStream.write(byteArray);
+        } catch (FileNotFoundException e) {
+
+        } finally {
+            fileOutputStream.close();
+        }
     }
 
     private static void handleContainsImage(Part part) throws Exception {
         System.out.println("content type" + part.getContentType());
         File file = new File("image " + new Date().getTime() + ".jpg");
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-        DataOutputStream dataOutputStream = new DataOutputStream(bufferedOutputStream);
-        com.sun.mail.util.BASE64DecoderStream test = (com.sun.mail.util.BASE64DecoderStream) part.getContent();
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = test.read(buffer)) != -1) {
-            dataOutputStream.write(buffer, 0, bytesRead);
+        FileOutputStream fileOutputStream = null;
+        BufferedOutputStream bufferedOutputStream = null;
+        DataOutputStream dataOutputStream = null;
+        try {
+            bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+            fileOutputStream = new FileOutputStream(file);
+            dataOutputStream = new DataOutputStream(bufferedOutputStream);
+            com.sun.mail.util.BASE64DecoderStream test = (com.sun.mail.util.BASE64DecoderStream) part.getContent();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = test.read(buffer)) != -1) {
+                dataOutputStream.write(buffer, 0, bytesRead);
+            }
+        } catch (FileNotFoundException | NullPointerException e) {
+            e.printStackTrace();
+        } finally {
+            dataOutputStream.close();
+            bufferedOutputStream.close();
+            fileOutputStream.close();
         }
-
-        dataOutputStream.close();
-        bufferedOutputStream.close();
-        fileOutputStream.close();
 
     }
 
