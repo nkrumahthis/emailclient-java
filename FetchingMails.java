@@ -53,6 +53,46 @@ public class FetchingMails {
         }
     }
 
+    public static void writePart(Part part) throws Exception {
+        if (part instanceof Message) {
+            writeEnvelope((Message) part);
+        }
+
+        System.out.println("------------------------");
+        System.out.println("CONTENT-TYPE: " + part.getContentType());
+
+        // Check if the content is plain text
+        if (part.isMimeType("text/plain")) {
+            System.out.println("This is plain text");
+            System.out.println("---------------------");
+            System.out.println((String) part.getContentType());
+        }
+
+        // Check if the content has attachment
+        else if (part.isMimeType("multipart/*")) {
+            System.out.println("This is a Multipart");
+            System.out.println("--------------------");
+            Multipart multipart = (Multipart) part.getcontent();
+            int count = multipart.getCount();
+            for (int i = 0; i < count; i++) {
+                writePart(multipart.getBodyPart(i));
+            }
+        }
+
+        // Check if the content is a nested message
+        else if (part.isMimeType("message/rfc822")) {
+            System.out.println("This is a Nested Message");
+            System.out.println("-------------------------");
+            writePart((Part) part.getContent());
+        }
+
+        // check if the content is an inline image
+        else if (part.isMimeType("image/jpeg")) {
+            // image jpeg
+
+        }
+    }
+
     public static void writeEnvelope(Message message) throws Exception {
         System.out.println("This is the message envelope");
         System.out.println("-----------------------------");
