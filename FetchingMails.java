@@ -3,25 +3,30 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.NoSuchProviderException;
 import java.util.Properties;
 import java.util.Date;
 
 import javax.mail.Address;
 import javax.mail.Folder;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 
-import jdk.internal.util.xml.impl.Input;
-
 /**
  * FetchingMails
  */
 public class FetchingMails {
+
+    private FetchingMails() {
+    }
+
     public static void fetch(String pop3Host, String storeType, String user, String password) {
         try {
             Properties properties = new Properties();
@@ -50,13 +55,22 @@ public class FetchingMails {
                 Message message = messages[i];
                 System.out.println("------------");
                 writePart(message);
+                String line = reader.readLine();
+                if ("YES".equals(line)) {
+                    message.writeTo(System.out);
+                } else if ("QUIT".equals(line)) {
+                    break;
+                }
 
-                // TODO continue
+                emailFolder.close(false);
+                store.close();
             }
 
-            // create the folder object and open it
+        } catch (NoSuchProviderException | MessagingException | IOException e) {
+            e.printStackTrace();
         } catch (Exception e) {
-            // TODO: handle exception
+            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
