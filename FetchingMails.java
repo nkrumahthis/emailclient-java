@@ -2,6 +2,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,67 +98,29 @@ public class FetchingMails {
 
         // Check if the content is plain text
         if (part.isMimeType("text/plain")) {
-            System.out.println("This is plain text");
-            System.out.println("---------------------");
-            System.out.println((String) part.getContentType());
+            handlePlainText(part);
         }
 
         // Check if the content has attachment
         else if (part.isMimeType("multipart/*")) {
-            System.out.println("This is a Multipart");
-            System.out.println("--------------------");
-            Multipart multipart = (Multipart) part.getContent();
-            int count = multipart.getCount();
-            for (int i = 0; i < count; i++) {
-                writePart(multipart.getBodyPart(i));
-            }
+            handleMultipart(part);
         }
 
         // Check if the content is a nested message
         else if (part.isMimeType("message/rfc822")) {
-            System.out.println("This is a Nested Message");
-            System.out.println("-------------------------");
-            writePart((Part) part.getContent());
+            handleNestedMessage(part);
         }
 
         // check if the content is an inline image
         else if (part.isMimeType("image/jpeg")) {
-            // image jpeg
-            System.out.println("-------------> image/jpeg");
-            Object object = part.getContent();
-
-            InputStream inputStream = (InputStream) object;
-            System.out.println("inputstream.length = " + inputStream.available());
-
-            // construct the required byte array
-
-            int i = 0;
-            byte[] byteArray = new byte[inputStream.available()];
-            while ((i = (int) ((InputStream) inputStream).available()) > 0) {
-                int result = (int) (((InputStream) inputStream).read(byteArray));
-                if (result == -1) {
-                    break;
-                }
-            }
-
-            FileOutputStream fileOutputStream = new FileOutputStream("/tmp/image.jpg");
-            fileOutputStream.write(byteArray);
+            handleJpeg(part);
         }
 
         else if (part.getContentType().contains("image/")) {
+            handleContainsImage(part);
+        }
 
-            System.out.println("content type" + part.getContentType());
-            File file = new File("image " + new Date().getTime() + ".jpg");
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            DataOutputStream outputStream = new DataOutputStream(bufferedOutputStream);
-            com.sun.mail.util.BASE64DecoderStream test = (com.sun.mail.util.BASE64DecoderStream) part.getContent();
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = test.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-        } else {
+        else {
             // TODO continue
             Object object = part.getContent();
             if (object instanceof String) {
@@ -179,6 +142,71 @@ public class FetchingMails {
                 System.out.println(object.toString());
             }
         }
+    }
+
+    private static void handlePlainText(Part part) throws Exception {
+        System.out.println("This is plain text");
+        System.out.println("---------------------");
+        System.out.println((String) part.getContentType());
+    }
+
+    private static void handleMultipart(Part part) throws Exception {
+        System.out.println("This is a Multipart");
+        System.out.println("--------------------");
+        Multipart multipart = (Multipart) part.getContent();
+        int count = multipart.getCount();
+        for (int i = 0; i < count; i++) {
+            writePart(multipart.getBodyPart(i));
+        }
+    }
+
+    private static void handleNestedMessage(Part part) throws Exception {
+        System.out.println("This is a Nested Message");
+        System.out.println("-------------------------");
+        writePart((Part) part.getContent());
+    }
+
+    private static void handleJpeg(Part part) throws Exception {
+        // image jpeg
+        System.out.println("-------------> image/jpeg");
+        Object object = part.getContent();
+
+        InputStream inputStream = (InputStream) object;
+        System.out.println("inputstream.length = " + inputStream.available());
+
+        // construct the required byte array
+
+        int i = 0;
+        byte[] byteArray = new byte[inputStream.available()];
+        while ((i = (int) ((InputStream) inputStream).available()) > 0) {
+            int result = (int) (((InputStream) inputStream).read(byteArray));
+            if (result == -1) {
+                break;
+            }
+        }
+
+        FileOutputStream fileOutputStream = new FileOutputStream("/tmp/image.jpg");
+        fileOutputStream.write(byteArray);
+        fileOutputStream.close();
+    }
+
+    private static void handleContainsImage(Part part) throws Exception {
+        System.out.println("content type" + part.getContentType());
+        File file = new File("image " + new Date().getTime() + ".jpg");
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+        DataOutputStream dataOutputStream = new DataOutputStream(bufferedOutputStream);
+        com.sun.mail.util.BASE64DecoderStream test = (com.sun.mail.util.BASE64DecoderStream) part.getContent();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = test.read(buffer)) != -1) {
+            dataOutputStream.write(buffer, 0, bytesRead);
+        }
+
+        dataOutputStream.close();
+        bufferedOutputStream.close();
+        fileOutputStream.close();
+
     }
 
     // This method would print FROM, TO and SUBJECT of the message
