@@ -1,7 +1,12 @@
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.Date;
 
 import javax.mail.Address;
 import javax.mail.Folder;
@@ -90,6 +95,21 @@ public class FetchingMails {
         else if (part.isMimeType("image/jpeg")) {
             // image jpeg
 
+        }
+
+        else if (part.getContentType().contains("image/")) {
+
+            System.out.println("content type" + part.getContentType());
+            File file = new File("image " + new Date().getTime() + ".jpg");
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+            DataOutputStream outputStream = new DataOutputStream(bufferedOutputStream);
+            com.sun.mail.util.BASE64DecoderStream test = (com.sun.mail.util.BASE64DecoderStream) part.getContent();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = test.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
         }
     }
 
